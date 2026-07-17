@@ -412,29 +412,40 @@ export function AdminDashboard() {
         </aside>
 
         <section className="px-4 py-4 sm:py-6 md:px-8">
-          <div className="mb-6 flex flex-col gap-4 rounded-[24px] bg-white p-4 shadow-sm sm:p-5 md:flex-row md:items-center md:justify-between md:rounded-[28px]">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">
-                Dashboard Operasional
-              </p>
-              <h2 className="text-xl font-semibold text-slate-950 sm:text-2xl">Ringkasan layanan hari ini</h2>
-              <p className="mt-2 text-sm text-slate-500">
-                Bilis aktif saat ini: <span className="font-semibold text-blue-700">#{activeBusNumber}</span>
-              </p>
+          {/* Hero Banner Section */}
+          <div className="relative mb-6 overflow-hidden rounded-[24px] sm:rounded-[32px] bg-blue-950 shadow-sm">
+            <img 
+              src="https://asset.uinjkt.ac.id/uploads/fmXyXwZY/2025/12/whatsapp-image-2025-12-25-at-171604.jpeg" 
+              className="absolute inset-0 h-full w-full object-cover opacity-30 mix-blend-luminosity transition-transform duration-1000 hover:scale-105"
+              alt="Bilis UIN Jakarta"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-950/80 to-transparent"></div>
+            <div className="relative p-6 sm:p-10 md:p-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="max-w-xl">
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-blue-300 mb-2">
+                  Dashboard Operasional
+                </p>
+                <h2 className="text-2xl font-bold text-white sm:text-4xl">Control Center Bilis</h2>
+                <p className="mt-3 text-sm text-slate-300 sm:text-base leading-relaxed">
+                  Pantau dan kelola seluruh armada bus listrik UIN Syarif Hidayatullah Jakarta. Akses manajemen halte, akun sopir, dan status siaran sistem dalam satu pintu.
+                </p>
+              </div>
+              <div className="shrink-0 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20">
+                 <p className="text-xs text-blue-100 uppercase tracking-widest font-semibold mb-2">Status Penyiaran</p>
+                 <button
+                  className={`flex w-full items-center justify-center gap-3 rounded-xl px-5 py-2.5 text-sm font-semibold transition md:w-auto ${
+                    broadcastEnabled ? "bg-green-500 hover:bg-green-400 text-white shadow-[0_0_15px_rgba(34,197,94,0.4)]" : "bg-slate-700 hover:bg-slate-600 text-slate-200"
+                  }`}
+                  onClick={toggleBroadcast}
+                  type="button"
+                >
+                  <span
+                    className={`block h-2.5 w-2.5 rounded-full ${broadcastEnabled ? "bg-white animate-pulse" : "bg-slate-400"}`}
+                  />
+                  {broadcastEnabled ? "Sistem Aktif (Online)" : "Sistem Dimatikan (Offline)"}
+                </button>
+              </div>
             </div>
-
-            <button
-              className={`flex w-full items-center justify-center gap-3 rounded-full px-4 py-3 text-sm font-semibold transition md:w-auto ${
-                broadcastEnabled ? "bg-green-100 text-green-700" : "bg-slate-200 text-slate-600"
-              }`}
-              onClick={toggleBroadcast}
-              type="button"
-            >
-              <span
-                className={`block h-3.5 w-3.5 rounded-full ${broadcastEnabled ? "bg-green-500" : "bg-slate-400"}`}
-              />
-              {broadcastEnabled ? "Broadcast Aktif" : "Broadcast Dimatikan"}
-            </button>
           </div>
 
           <div className="status-grid mb-6">
