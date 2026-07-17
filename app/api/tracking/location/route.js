@@ -13,16 +13,19 @@ export async function POST(request) {
 
   const store = await updateStore((current) => ({
     ...current,
-    bus: {
-      ...current.bus,
-      lat: Number(payload.lat),
-      lng: Number(payload.lng),
-      updatedAt: new Date().toISOString(),
-      isTracking: true,
-      driverId: auth.id,
-      stationName: current.settings.chargingStationName,
-      statusText: payload.statusText || "Bus sedang bergerak."
-    }
+    buses: current.buses.map((bus) =>
+      bus.driverId === auth.id
+        ? {
+            ...bus,
+            lat: Number(payload.lat),
+            lng: Number(payload.lng),
+            updatedAt: new Date().toISOString(),
+            isTracking: true,
+            stationName: current.settings.chargingStationName,
+            statusText: payload.statusText || "Bus sedang bergerak."
+          }
+        : bus
+    )
   }));
 
   const snapshot = buildTrackingSnapshot(store);

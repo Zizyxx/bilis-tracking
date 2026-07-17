@@ -37,7 +37,7 @@ function RecenterMap({ center }) {
 
 export function LiveMap({
   center,
-  busPosition,
+  buses = [],
   stops,
   route,
   selectedStopId,
@@ -84,17 +84,21 @@ export function LiveMap({
             </Popup>
           </Marker>
         ))}
-        <Marker icon={busIcon} position={[busPosition.lat, busPosition.lng]}>
-          <Popup>
-            <div className="space-y-1">
-              <p className="font-semibold text-slate-900">Bilis Sedang Beroperasi</p>
-              <p className="text-sm text-slate-500">
-                Lat {busPosition.lat.toFixed(5)} | Lng {busPosition.lng.toFixed(5)}
-              </p>
-            </div>
-          </Popup>
-        </Marker>
-        {autoCenter ? <RecenterMap center={[busPosition.lat, busPosition.lng]} /> : null}
+        {buses.filter((bus) => bus.isTracking).map((bus) => (
+          <Marker key={bus.number} icon={busIcon} position={[bus.lat, bus.lng]}>
+            <Popup>
+              <div className="space-y-1">
+                <p className="font-semibold text-slate-900">Bilis #{bus.number}</p>
+                <p className="text-sm text-slate-500">
+                  Lat {bus.lat.toFixed(5)} | Lng {bus.lng.toFixed(5)}
+                </p>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+        {autoCenter && buses.some((b) => b.isTracking) ? (
+          <RecenterMap center={[buses.find((b) => b.isTracking).lat, buses.find((b) => b.isTracking).lng]} />
+        ) : null}
       </MapContainer>
     </div>
   );

@@ -12,15 +12,20 @@ export async function POST() {
 
   const store = await updateStore((current) => ({
     ...current,
-    bus: {
-      ...current.bus,
-      lat: busDefaultPosition.lat,
-      lng: busDefaultPosition.lng,
-      isTracking: false,
-      stationName: current.settings.chargingStationName,
-      statusText: `Bilis ${current.bus.number} berada di ${current.settings.chargingStationName}.`,
-      updatedAt: new Date().toISOString()
-    },
+    buses: current.buses.map((bus) =>
+      bus.driverId === auth.id
+        ? {
+            ...bus,
+            lat: busDefaultPosition.lat,
+            lng: busDefaultPosition.lng,
+            isTracking: false,
+            driverId: null,
+            stationName: current.settings.chargingStationName,
+            statusText: `Bilis ${bus.number} berada di ${current.settings.chargingStationName}.`,
+            updatedAt: new Date().toISOString()
+          }
+        : bus
+    ),
     drivers: current.drivers.map((driver) =>
       driver.id === auth.id ? { ...driver, status: "Siaga" } : driver
     )

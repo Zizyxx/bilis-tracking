@@ -102,17 +102,23 @@ export function DriverConsole() {
         if (Array.isArray(state.route) && state.route.length > 0) {
           setDemoRoute(state.route);
         }
-        if (state.bus?.number) {
-          setSelectedBusNumber(state.bus.number);
+        
+        const driverBus = state.buses?.find(b => b.driverId === data.user?.id) || state.buses?.[0];
+
+        if (driverBus?.number) {
+          setSelectedBusNumber(driverBus.number);
         }
-        if (state.bus?.lat != null && state.bus?.lng != null) {
+        if (driverBus?.lat != null && driverBus?.lng != null) {
           setPosition({
-            latitude: state.bus.lat,
-            longitude: state.bus.lng
+            latitude: driverBus.lat,
+            longitude: driverBus.lng
           });
         }
-        if (state.bus?.statusText) {
-          setStatusText(state.bus.statusText);
+        if (driverBus?.statusText) {
+          setStatusText(driverBus.statusText);
+        }
+        if (driverBus?.isTracking) {
+          setIsTracking(true);
         }
         setPageError("");
       } catch {
