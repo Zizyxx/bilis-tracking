@@ -12,6 +12,7 @@ function AdminLogin({ onLogin, loading, error }) {
 
   return (
     <section className="mx-auto max-w-md rounded-[32px] bg-white p-6 shadow-sm md:p-8">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/LOGO_UIN.png" alt="Logo UIN" className="h-12 w-auto object-contain mb-4" />
       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-700">Login Admin</p>
       <h1 className="mt-3 text-3xl font-semibold text-blue-950">Masuk ke dashboard bilis</h1>
       <p className="mt-3 text-sm leading-6 text-slate-500">
@@ -58,6 +59,7 @@ function AdminLogin({ onLogin, loading, error }) {
 export function AdminDashboard() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [loginError, setLoginError] = useState("");
   const [pageError, setPageError] = useState("");
   const [broadcastEnabled, setBroadcastEnabled] = useState(true);
@@ -379,39 +381,75 @@ export function AdminDashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 text-slate-900">
-      <div className="grid min-h-screen lg:grid-cols-[280px,1fr]">
-        <aside className="bg-blue-950 px-4 py-6 text-white sm:px-6 sm:py-8">
-          <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-200">Admin Console</p>
-            <h1 className="text-2xl font-semibold sm:text-3xl">Bilis Control Center</h1>
-            <p className="text-sm leading-6 text-blue-100/80">
-              Login sebagai <span className="font-semibold text-white">{session.name}</span> untuk mengelola
-              halte, akun sopir, dan status operasional.
-            </p>
+    <main className="min-h-screen bg-slate-100 text-slate-900 flex flex-col">
+      {/* Top Navbar */}
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+          <div className="flex items-center gap-3">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/LOGO_UIN.png" alt="Logo UIN" className="h-8 w-auto object-contain" />
+            <h1 className="text-lg font-bold text-blue-950 hidden sm:block">Control Center</h1>
           </div>
-
-          <nav className="mt-6 grid gap-3 sm:mt-10 lg:block lg:space-y-3">
-            {navigation.map((item) => (
-              <div
-                key={item}
-                className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-blue-50"
+          
+          <nav className="hidden md:flex space-x-2">
+            {[
+              { id: 'dashboard', label: 'Dashboard' },
+              { id: 'halte', label: 'Manajemen Halte' },
+              { id: 'armada', label: 'Armada Bilis' },
+              { id: 'sopir', label: 'Akun Sopir' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition cursor-pointer ${
+                  activeTab === tab.id 
+                    ? 'bg-blue-50 text-blue-700' 
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
               >
-                {item}
-              </div>
+                {tab.label}
+              </button>
             ))}
           </nav>
 
-          <button
-            className="mt-6 w-full rounded-2xl border border-white/15 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 sm:mt-10 lg:w-auto"
-            onClick={logout}
-            type="button"
-          >
-            Logout
-          </button>
-        </aside>
+          <div className="flex items-center gap-4">
+            <div className="hidden lg:block text-sm text-slate-500">
+              Hi, <span className="font-semibold text-slate-700">{session.name}</span>
+            </div>
+            <button 
+              onClick={logout} 
+              className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 cursor-pointer"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+        
+        {/* Mobile Navigation */}
+        <div className="flex overflow-x-auto border-t border-slate-100 md:hidden no-scrollbar">
+          {[
+            { id: 'dashboard', label: 'Dashboard' },
+            { id: 'halte', label: 'Halte' },
+            { id: 'armada', label: 'Armada' },
+            { id: 'sopir', label: 'Sopir' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold transition ${
+                activeTab === tab.id 
+                  ? 'border-blue-600 text-blue-700' 
+                  : 'border-transparent text-slate-600'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </header>
 
-        <section className="px-4 py-4 sm:py-6 md:px-8">
+      <section className="mx-auto max-w-7xl w-full px-4 py-6 sm:py-8 sm:px-6 lg:px-8 flex-1">
+        {activeTab === 'dashboard' && (
+          <div className="animate-fade-in">
           {/* Hero Banner Section */}
           <div className="relative mb-6 overflow-hidden rounded-[24px] sm:rounded-[32px] bg-blue-950 shadow-sm">
             <img 
@@ -468,8 +506,11 @@ export function AdminDashboard() {
               {pageError}
             </div>
           ) : null}
+          </div>
+        )}
 
-          <div className="grid gap-6 xl:grid-cols-[1.5fr,1fr]">
+        {activeTab === 'halte' && (
+          <div className="animate-fade-in">
             <section className="rounded-[28px] bg-white p-5 shadow-sm">
               <div className="mb-5 flex items-center justify-between">
                 <div>
@@ -559,7 +600,11 @@ export function AdminDashboard() {
                 </button>
               </form>
             </section>
+          </div>
+        )}
 
+        {activeTab === 'armada' && (
+          <div className="animate-fade-in max-w-2xl mx-auto">
             <div className="space-y-6">
               <section className="rounded-[28px] bg-white p-5 shadow-sm">
                 <h3 className="text-xl font-semibold text-blue-950">Armada Bilis</h3>
@@ -586,7 +631,13 @@ export function AdminDashboard() {
                   </button>
                 </div>
               </section>
+            </div>
+          </div>
+        )}
 
+        {activeTab === 'sopir' && (
+          <div className="animate-fade-in max-w-4xl mx-auto">
+            <div className="space-y-6">
               <section className="rounded-[28px] bg-white p-5 shadow-sm">
                 <h3 className="text-xl font-semibold text-blue-950">Akun Sopir</h3>
                 <p className="mt-1 text-sm text-slate-500">Tambah akun login sopir untuk panel `/driver`.</p>
@@ -664,8 +715,8 @@ export function AdminDashboard() {
               </section>
             </div>
           </div>
-        </section>
-      </div>
+        )}
+      </section>
 
       {/* Modal Edit Halte */}
       {editingStop && (

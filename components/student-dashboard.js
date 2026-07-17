@@ -135,10 +135,13 @@ export function StudentDashboard() {
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[500] p-2 sm:p-4 md:p-6">
         <div className="glass-panel fade-up pointer-events-auto mx-auto flex max-w-5xl flex-col gap-2 rounded-[20px] px-3 py-3 text-slate-900 sm:gap-3 sm:rounded-[24px] sm:px-5 sm:py-4 md:flex-row md:items-center md:justify-between md:gap-4 md:rounded-[28px]">
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700 sm:text-xs sm:tracking-[0.28em]">
-              Live Tracking Bilis UIN Jakarta
-            </p>
-            <h1 className="mt-1 hidden text-base font-semibold leading-tight sm:block sm:text-lg md:text-2xl">
+            <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/LOGO_UIN.png" alt="Logo UIN" className="h-6 w-auto sm:h-8 object-contain" />
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-700 sm:text-xs sm:tracking-[0.28em]">
+                Live Tracking Bilis UIN Jakarta
+              </p>
+            </div>
+            <h1 className="hidden text-base font-semibold leading-tight sm:block sm:text-lg md:text-2xl">
               Pantau posisi bus dan ETA halte tanpa refresh
             </h1>
           </div>

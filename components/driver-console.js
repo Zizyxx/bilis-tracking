@@ -23,6 +23,7 @@ function DriverLogin({ onLogin, error, loading }) {
 
   return (
     <section className="mx-auto max-w-md rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-[0_30px_80px_rgba(15,23,42,0.12)] backdrop-blur md:p-8">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/LOGO_UIN.png" alt="Logo UIN" className="h-12 w-auto object-contain mb-4" />
       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-700">Login Sopir</p>
       <h1 className="mt-3 text-2xl font-semibold text-blue-950 sm:text-3xl">Masuk ke panel kendali bus</h1>
       <p className="mt-3 text-sm leading-6 text-slate-500">
@@ -288,15 +289,15 @@ export function DriverConsole() {
       </main>
     );
   }
-
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(20,87,213,0.18),_transparent_35%),linear-gradient(180deg,#f8fbff_0%,#eef5ff_100%)] px-4 py-4 text-slate-900 sm:py-8">
       <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-3xl flex-col justify-between rounded-[28px] border border-white/70 bg-white/90 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.12)] backdrop-blur sm:min-h-[calc(100vh-4rem)] sm:rounded-[36px] sm:p-6 md:p-10">
         <div className="space-y-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-            <div className="min-w-0">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-2">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/LOGO_UIN.png" alt="Logo UIN" className="h-10 w-auto object-contain mb-1" />
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-700">
-                Panel Kendali Sopir
+                Driver Console
               </p>
               <h1 className="max-w-xl text-2xl font-semibold leading-tight text-blue-950 sm:text-3xl md:text-5xl">
                 Aktifkan live tracking bilis dalam beberapa detik.
