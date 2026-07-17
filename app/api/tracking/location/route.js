@@ -1,0 +1,32 @@
+import { NextResponse } from "next/server";
+import { requireRole } from "@/lib/api-auth.mjs";
+import { broadcastEvent } from "@/lib/realtime.mjs";
+import { buildTrackingSnapshot, updateStore } from "@/lib/store.mjs";
+
+export async function POST(request) {
+  const auth = await requireRole("driver");
+  if (auth instanceof Response) {
+    return auth;
+  }
+
+  const payload = await request.json();
+
+  const store = await updateStore((current) => ({
+    ...current,
+    bus: {
+      ...current.bus,
+      lat: Number(payload.lat),
+      lng: Number(payload.lng),
+      updatedAt: new Date().toISOString(),
+      isTracking: true,
+      driverId: auth.id,
+      stationName: current.settings.chargingStationName,
+      statusText: payload.statusText || "Bus sedang bergerak."
+    }
+  }));
+
+  const snapshot = buildTrackingSnapshot(store);
+  broadcastEvent("tracking:update", snapshot);
+
+  return NextResponse.json({ success: true, snapshot });
+}
