@@ -101,7 +101,9 @@ export function StudentDashboard() {
     return closest;
   }, [activeBuses, snapshot.stops]);
 
-  const selectedEta = selectedStop ? getEtaForStop(snapshot.etas, selectedStop.id) : 0;
+  const selectedEtaObj = snapshot.etas.find((eta) => eta.stopId === selectedStop?.id);
+  const selectedEta = selectedEtaObj?.etaMinutes ?? 0;
+  const nearestBusNum = selectedEtaObj?.nearestBus;
   
   const isGpsOffline = isAnyBusTracking && activeBuses.every((bus) => {
     const age = bus.updatedAt ? Math.floor((Date.now() - new Date(bus.updatedAt).getTime()) / 1000) : Infinity;
@@ -203,7 +205,7 @@ export function StudentDashboard() {
               </span>
               <div className="pb-1 sm:pb-2">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-green-600 sm:text-sm sm:tracking-[0.24em]">
-                  Menit Lagi
+                  Menit Lagi {nearestBusNum ? `(Bilis #${nearestBusNum})` : ""}
                 </p>
                 <p className="max-w-[180px] text-[10px] leading-snug text-slate-500 sm:max-w-[240px] sm:text-sm sm:leading-5">
                   {isAnyBusTracking ? `${activeBuses.length} bilis sedang beroperasi.` : "Memuat data operasional..."}

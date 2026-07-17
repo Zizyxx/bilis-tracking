@@ -84,18 +84,33 @@ export function LiveMap({
             </Popup>
           </Marker>
         ))}
-        {buses.filter((bus) => bus.isTracking).map((bus) => (
-          <Marker key={bus.number} icon={busIcon} position={[bus.lat, bus.lng]}>
-            <Popup>
-              <div className="space-y-1">
-                <p className="font-semibold text-slate-900">Bilis #{bus.number}</p>
-                <p className="text-sm text-slate-500">
-                  Lat {bus.lat.toFixed(5)} | Lng {bus.lng.toFixed(5)}
-                </p>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        {buses.filter((bus) => bus.isTracking).map((bus, _, activeBuses) => {
+          const samePosBuses = activeBuses.filter(b => b.lat === bus.lat && b.lng === bus.lng);
+          const samePosCount = samePosBuses.length;
+          const samePosIndex = samePosBuses.findIndex(b => b.number === bus.number);
+          
+          let latOffset = 0;
+          let lngOffset = 0;
+          if (samePosCount > 1) {
+            const angle = (samePosIndex / samePosCount) * Math.PI * 2;
+            const offsetMeters = 0.00015;
+            latOffset = Math.sin(angle) * offsetMeters;
+            lngOffset = Math.cos(angle) * offsetMeters;
+          }
+
+          return (
+            <Marker key={bus.number} icon={busIcon} position={[bus.lat + latOffset, bus.lng + lngOffset]}>
+              <Popup>
+                <div className="space-y-1">
+                  <p className="font-semibold text-slate-900">Bilis #{bus.number}</p>
+                  <p className="text-sm text-slate-500">
+                    Lat {bus.lat.toFixed(5)} | Lng {bus.lng.toFixed(5)}
+                  </p>
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
         {autoCenter && buses.some((b) => b.isTracking) ? (
           <RecenterMap center={[buses.find((b) => b.isTracking).lat, buses.find((b) => b.isTracking).lng]} />
         ) : null}
