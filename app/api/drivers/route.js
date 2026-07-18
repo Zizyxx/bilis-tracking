@@ -29,7 +29,7 @@ export async function POST(request) {
     name: payload.name,
     email: payload.email,
     username: payload.username,
-    status: "Siaga",
+    status: "Aktif",
     passwordHash
   };
 

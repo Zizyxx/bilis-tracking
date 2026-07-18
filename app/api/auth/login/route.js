@@ -37,6 +37,15 @@ export async function POST(request) {
         { status: 403 }
       );
     }
+    if (error.message && error.message.includes("KEAMANAN KRITIS")) {
+      console.error(error.message);
+      return NextResponse.json(
+        { error: "🚨 Konfigurasi sistem belum selesai: JWT_SECRET belum diatur di Vercel!" },
+        { status: 500 }
+      );
+    }
+    
+    console.error("Login error:", error);
     return NextResponse.json(
       { error: "Terjadi kesalahan sistem saat login." },
       { status: 500 }

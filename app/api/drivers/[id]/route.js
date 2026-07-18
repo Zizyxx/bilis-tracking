@@ -25,7 +25,8 @@ export async function PUT(request, { params }) {
           ...driver,
           name: payload.name,
           email: payload.email,
-          username: payload.username
+          username: payload.username,
+          status: payload.status
         };
         if (newPasswordHash) {
           updated.passwordHash = newPasswordHash;
