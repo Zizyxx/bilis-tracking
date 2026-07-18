@@ -804,41 +804,47 @@ export function AdminDashboard() {
                 <h3 className="text-xl font-semibold text-blue-950">Armada Bilis</h3>
                 <p className="mt-1 text-sm text-slate-500">Kelola daftar kendaraan operasional Bilis beserta informasi plat nomornya.</p>
 
-                <ul className="mt-5 space-y-3">
-                  {buses.map((bus) => (
-                    <li key={bus.id} className="rounded-2xl border border-slate-200 px-4 py-3">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="min-w-0">
-                          <p className="font-semibold text-slate-800">
-                            Bilis {bus.number}
-                            <span className={`ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${bus.status === 'Non-Aktif' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                              {bus.status || 'Aktif'}
+                <div className="mt-5 overflow-x-auto rounded-3xl border border-slate-200">
+                  <table className="min-w-[640px] divide-y divide-slate-200 text-left text-sm md:min-w-full">
+                    <thead className="bg-blue-50 text-blue-800">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold">Nomor Bilis</th>
+                        <th className="px-4 py-3 font-semibold">Plat Nomor</th>
+                        <th className="px-4 py-3 font-semibold">Status Operasional</th>
+                        <th className="px-4 py-3 font-semibold">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 bg-white">
+                      {buses.map((bus) => (
+                        <tr key={bus.id}>
+                          <td className="px-4 py-4 font-semibold text-blue-900">Bilis {bus.number}</td>
+                          <td className="px-4 py-4 text-slate-600">{bus.plate || '-'}</td>
+                          <td className="px-4 py-4">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${bus.status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                              {bus.status}
                             </span>
-                          </p>
-                          <p className="break-all text-sm text-slate-500">
-                            {bus.plate ? bus.plate : "Plat belum diisi"}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button
-                            className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition active:scale-95 cursor-pointer"
-                            onClick={() => startEditBus(bus)}
-                            type="button"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="text-xs font-semibold text-red-600 hover:text-red-800 transition active:scale-95 cursor-pointer"
-                            onClick={() => deleteBus(bus.id)}
-                            type="button"
-                          >
-                            Hapus
-                          </button>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                          </td>
+                          <td className="px-4 py-4 space-x-3">
+                            <button
+                              className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition active:scale-95 cursor-pointer"
+                              onClick={() => startEditBus(bus)}
+                              type="button"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="text-sm font-semibold text-red-600 hover:text-red-800 transition active:scale-95 cursor-pointer"
+                              onClick={() => deleteBus(bus.id)}
+                              type="button"
+                            >
+                              Hapus
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
 
                 <form className="mt-5 space-y-3" onSubmit={createBus}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -885,41 +891,49 @@ export function AdminDashboard() {
                   />
                 </div>
 
-                <ul className="mt-4 space-y-3">
-                  {filteredDrivers.map((driver) => (
-                    <li key={driver.id} className="rounded-2xl border border-slate-200 px-4 py-3">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="min-w-0">
-                          <p className="font-semibold text-slate-800 capitalize">
-                            {driver.name} 
-                            <span className={`ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${driver.status === 'Non-Aktif' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                <div className="mt-4 overflow-x-auto rounded-3xl border border-slate-200">
+                  <table className="min-w-[640px] divide-y divide-slate-200 text-left text-sm md:min-w-full">
+                    <thead className="bg-blue-50 text-blue-800">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold">Nama Sopir</th>
+                        <th className="px-4 py-3 font-semibold">Username</th>
+                        <th className="px-4 py-3 font-semibold">Email</th>
+                        <th className="px-4 py-3 font-semibold">Status</th>
+                        <th className="px-4 py-3 font-semibold">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 bg-white">
+                      {filteredDrivers.map((driver) => (
+                        <tr key={driver.id}>
+                          <td className="px-4 py-4 font-semibold text-slate-800 capitalize">{driver.name}</td>
+                          <td className="px-4 py-4 text-slate-600">{driver.username}</td>
+                          <td className="px-4 py-4 text-slate-600">{driver.email}</td>
+                          <td className="px-4 py-4">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${driver.status === 'Non-Aktif' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                               {driver.status || 'Aktif'}
                             </span>
-                          </p>
-                          <p className="break-all text-sm text-slate-500">
-                            {driver.email} | {driver.username}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button
-                            className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition active:scale-95 cursor-pointer"
-                            onClick={() => startEditDriver(driver)}
-                            type="button"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="text-xs font-semibold text-red-600 hover:text-red-800 transition active:scale-95 cursor-pointer"
-                            onClick={() => deleteDriver(driver.id)}
-                            type="button"
-                          >
-                            Hapus
-                          </button>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                          </td>
+                          <td className="px-4 py-4 space-x-3">
+                            <button
+                              className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition active:scale-95 cursor-pointer"
+                              onClick={() => startEditDriver(driver)}
+                              type="button"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="text-sm font-semibold text-red-600 hover:text-red-800 transition active:scale-95 cursor-pointer"
+                              onClick={() => deleteDriver(driver.id)}
+                              type="button"
+                            >
+                              Hapus
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
 
                 <form className="mt-5 space-y-3" onSubmit={addDriver}>
                   <input

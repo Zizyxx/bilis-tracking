@@ -3,6 +3,7 @@
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
 import { useEffect } from "react";
 import { busIcon, chargingStationIcon, stopIcon } from "@/components/map-icons";
+import { busDefaultPosition } from "@/lib/mock-data.js";
 
 function SyncMapSize() {
   const map = useMap();
@@ -66,7 +67,7 @@ export function LiveMap({
         />
         <Marker
           icon={chargingStationIcon}
-          position={[-6.3023, 106.7562]}
+          position={[busDefaultPosition.lat, busDefaultPosition.lng]}
         >
           <Popup>
             <div className="space-y-1">
