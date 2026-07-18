@@ -20,6 +20,7 @@ function DriverLogin({ onLogin, error, loading }) {
     identifier: "",
     password: ""
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <section className="mx-auto max-w-md rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-[0_30px_80px_rgba(15,23,42,0.12)] backdrop-blur md:p-8">
@@ -43,13 +44,26 @@ function DriverLogin({ onLogin, error, loading }) {
           placeholder="Username atau email"
           value={form.identifier}
         />
-        <input
-          className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400"
-          onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-          placeholder="Password"
-          type="password"
-          value={form.password}
-        />
+        <div className="relative">
+          <input
+            className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400"
+            onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
+            placeholder="Password"
+            type={showPassword ? "text" : "password"}
+            value={form.password}
+          />
+          <button
+            type="button"
+            className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 cursor-pointer"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            )}
+          </button>
+        </div>
         {error ? <p className="text-sm font-medium text-red-600">{error}</p> : null}
         <button
           className="active:scale-95 w-full rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
@@ -77,7 +91,7 @@ export function DriverConsole() {
     longitude: busRoute[0].lng
   });
   const [demoRoute, setDemoRoute] = useState(busRoute);
-  const [fleetOptions, setFleetOptions] = useState(["01", "02", "03", "04", "05", "06"]);
+  const [buses, setBuses] = useState([]);
   const [selectedBusNumber, setSelectedBusNumber] = useState("01");
   const watchIdRef = useRef(null);
   const fallbackTimerRef = useRef(null);
@@ -95,8 +109,8 @@ export function DriverConsole() {
 
         setSession(data.user);
 
-        if (Array.isArray(state.fleetOptions) && state.fleetOptions.length > 0) {
-          setFleetOptions(state.fleetOptions);
+        if (Array.isArray(state.buses) && state.buses.length > 0) {
+          setBuses(state.buses);
         }
         if (Array.isArray(state.route) && state.route.length > 0) {
           setDemoRoute(state.route);
@@ -326,11 +340,14 @@ export function DriverConsole() {
               onChange={(event) => setSelectedBusNumber(event.target.value)}
               value={selectedBusNumber}
             >
-              {fleetOptions.map((option) => (
-                <option key={option} value={option}>
-                  Bilis {option}
+              {buses.filter(b => b.status === "Aktif").map((bus) => (
+                <option key={bus.id} value={bus.number}>
+                  Bilis {bus.number} {bus.plate ? `(${bus.plate})` : ''}
                 </option>
               ))}
+              {buses.length === 0 && (
+                <option value="01">Bilis 01</option>
+              )}
             </select>
           </div>
         </div>

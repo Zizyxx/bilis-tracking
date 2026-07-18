@@ -21,3 +21,15 @@ export const stopIcon = L.divIcon({
   iconSize: [30, 30],
   iconAnchor: [15, 15]
 });
+
+export const chargingStationIcon = L.divIcon({
+  className: "",
+  html: `
+    <div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:999px;background:linear-gradient(145deg,#22c55e,#166534);box-shadow:0 8px 20px rgba(34,197,94,.25);border:2px solid rgba(255,255,255,.9);">
+      <span style="font-size:20px;line-height:1;">⚡</span>
+    </div>
+  `,
+  iconSize: [40, 40],
+  iconAnchor: [20, 20]
+});
+

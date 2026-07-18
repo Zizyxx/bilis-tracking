@@ -2,7 +2,7 @@
 
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
 import { useEffect } from "react";
-import { busIcon, stopIcon } from "@/components/map-icons";
+import { busIcon, chargingStationIcon, stopIcon } from "@/components/map-icons";
 
 function SyncMapSize() {
   const map = useMap();
@@ -64,6 +64,17 @@ export function LiveMap({
           positions={route.map((point) => [point.lat, point.lng])}
           pathOptions={{ color: "#1457d5", weight: 4, opacity: 0.65, dashArray: "10 12" }}
         />
+        <Marker
+          icon={chargingStationIcon}
+          position={[-6.3023, 106.7562]}
+        >
+          <Popup>
+            <div className="space-y-1">
+              <p className="font-semibold text-slate-900">Pool / Charging Station Bilis</p>
+              <p className="text-sm text-slate-500">Pusat parkir dan pengisian daya bus listrik kampus.</p>
+            </div>
+          </Popup>
+        </Marker>
         {stops.map((stop) => (
           <Marker
             key={stop.id}

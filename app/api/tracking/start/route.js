@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth.mjs";
 import { broadcastEvent } from "@/lib/realtime.mjs";
-import { buildTrackingSnapshot, getFleetOptions, updateStore } from "@/lib/store.mjs";
+import { buildTrackingSnapshot, updateStore } from "@/lib/store.mjs";
+import { addLog } from "@/lib/logger.mjs";
 
 export async function POST(request) {
   const auth = await requireRole("driver");
@@ -12,7 +13,7 @@ export async function POST(request) {
   const payload = await request.json().catch(() => ({}));
 
   const store = await updateStore((current) => {
-    const validFleet = getFleetOptions(current.settings.totalBuses);
+    const validFleet = current.buses.filter(b => b.status === "Aktif").map(b => b.number);
     const busNumber = validFleet.includes(payload?.busNumber)
       ? payload.busNumber
       : validFleet[0];
@@ -38,6 +39,13 @@ export async function POST(request) {
 
   const snapshot = buildTrackingSnapshot(store);
   broadcastEvent("tracking:snapshot", snapshot);
+
+  const busNumber = store.buses.find(b => b.driverId === auth.id)?.number || "Tidak Diketahui";
+  await addLog(
+    auth.name,
+    `Mulai siaran langsung (live tracking) Bilis ${busNumber}`,
+    "INFO"
+  );
 
   return NextResponse.json({ success: true, snapshot });
 }

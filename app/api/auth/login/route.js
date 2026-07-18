@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { findUserByCredentials, withSessionCookie } from "@/lib/api-auth.mjs";
+import { addLog } from "@/lib/logger.mjs";
 
 export async function POST(request) {
   const { role, identifier, password } = await request.json();
@@ -20,6 +21,12 @@ export async function POST(request) {
         { status: 401 }
       );
     }
+
+    await addLog(
+      user.role === "admin" ? "System Admin" : user.name,
+      `Berhasil login sebagai ${user.role === "admin" ? "Admin" : "Sopir"}`,
+      "SUCCESS"
+    );
 
     const response = NextResponse.json({ user });
     return withSessionCookie(response, user);

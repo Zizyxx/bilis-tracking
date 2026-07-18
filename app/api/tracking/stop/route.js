@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth.mjs";
+import { addLog } from "@/lib/logger.mjs";
 import { broadcastEvent } from "@/lib/realtime.mjs";
 import { buildTrackingSnapshot, updateStore } from "@/lib/store.mjs";
 import { busDefaultPosition } from "@/lib/mock-data.js";
@@ -33,6 +34,13 @@ export async function POST() {
 
   const snapshot = buildTrackingSnapshot(store);
   broadcastEvent("tracking:snapshot", snapshot);
+
+  const busNumber = store.buses.find(b => b.driverId === auth.id)?.number || "Tidak Diketahui";
+  await addLog(
+    auth.name,
+    `Menghentikan siaran (live tracking) Bilis ${busNumber}`,
+    "INFO"
+  );
 
   return NextResponse.json({ success: true, snapshot });
 }

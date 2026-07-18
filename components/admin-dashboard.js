@@ -66,6 +66,7 @@ export function AdminDashboard() {
   const [activeBusNumber, setActiveBusNumber] = useState("01");
   const [stops, setStops] = useState([]);
   const [drivers, setDrivers] = useState([]);
+  const [buses, setBuses] = useState([]);
   const [searchStop, setSearchStop] = useState("");
   const [searchDriver, setSearchDriver] = useState("");
   const [stopForm, setStopForm] = useState({
@@ -96,6 +97,30 @@ export function AdminDashboard() {
     username: "",
     password: ""
   });
+  const [busForm, setBusForm] = useState({
+    number: "",
+    plate: "",
+    status: "Aktif"
+  });
+  const [showAddPassword, setShowAddPassword] = useState(false);
+  const [showEditPassword, setShowEditPassword] = useState(false);
+  const [editingBus, setEditingBus] = useState(null);
+  const [busEditForm, setBusEditForm] = useState({
+    number: "",
+    plate: "",
+    status: "Aktif"
+  });
+  const [logs, setLogs] = useState([]);
+
+  async function loadLogs() {
+    try {
+      const response = await fetch("/api/admin/logs", { cache: "no-store" });
+      if (response.ok) {
+        const data = await response.json();
+        setLogs(data.logs);
+      }
+    } catch (e) {}
+  }
 
   async function loadSession() {
     const response = await fetch("/api/auth/session", { cache: "no-store" });
@@ -105,11 +130,12 @@ export function AdminDashboard() {
   }
 
   async function loadDashboard() {
-    const [stopsResponse, driversResponse, settingsResponse, stateResponse] = await Promise.all([
+    const [stopsResponse, driversResponse, settingsResponse, stateResponse, busesResponse] = await Promise.all([
       fetch("/api/stops", { cache: "no-store" }),
       fetch("/api/drivers", { cache: "no-store" }),
       fetch("/api/settings", { cache: "no-store" }),
-      fetch("/api/public/state", { cache: "no-store" })
+      fetch("/api/public/state", { cache: "no-store" }),
+      fetch("/api/buses", { cache: "no-store" })
     ]);
 
     if (stopsResponse.ok) {
@@ -135,6 +161,11 @@ export function AdminDashboard() {
         setActiveBusesCount(publicState.buses.filter((b) => b.isTracking).length);
       }
     }
+
+    if (busesResponse.ok) {
+      const busData = await busesResponse.json();
+      setBuses(busData.buses);
+    }
   }
 
   useEffect(() => {
@@ -151,9 +182,20 @@ export function AdminDashboard() {
         setLoading(false);
       }
     }
-
     bootstrap();
-  }, []);
+    
+    if (activeTab === "dashboard") {
+      loadLogs();
+    }
+    
+    // Polling for live activity logs
+    const interval = setInterval(() => {
+      if (activeTab === "dashboard") {
+        loadLogs();
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [activeTab]);
 
   async function handleLogin(form) {
     setLoading(true);
@@ -327,7 +369,84 @@ export function AdminDashboard() {
       setPageError("Tidak dapat terhubung ke server untuk menghapus sopir.");
     }
   }
+  async function createBus(event) {
+    event.preventDefault();
+    try {
+      const response = await fetch("/api/buses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(busForm)
+      });
+      const data = await response.json();
 
+      if (response.ok) {
+        setBuses(data.buses);
+        setBusForm({ number: "", plate: "", status: "Aktif" });
+        setPageError("");
+      } else {
+        setPageError(data.error || "Gagal menambah bilis.");
+      }
+    } catch {
+      setPageError("Tidak dapat terhubung ke server.");
+    }
+  }
+
+  function startEditBus(bus) {
+    setEditingBus(bus);
+    setBusEditForm({
+      number: bus.number || "",
+      plate: bus.plate || "",
+      status: bus.status || "Aktif"
+    });
+  }
+
+  async function updateBus(event) {
+    event.preventDefault();
+    if (!editingBus) return;
+
+    try {
+      const response = await fetch(`/api/buses/${editingBus.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(busEditForm)
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        setBuses(data.buses);
+        setEditingBus(null);
+        setPageError("");
+      } else {
+        setPageError(data.error || "Gagal memperbarui data bilis.");
+      }
+    } catch {
+      setPageError("Tidak dapat terhubung ke server.");
+    }
+  }
+
+  async function deleteBus(busId) {
+    if (!confirm("Apakah Anda yakin ingin menghapus bilis ini?")) return;
+
+    try {
+      const response = await fetch(`/api/buses/${busId}`, {
+        method: "DELETE"
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        setBuses(data.buses);
+        setPageError("");
+      } else {
+        setPageError(data.error || "Gagal menghapus bilis.");
+      }
+    } catch {
+      setPageError("Tidak dapat terhubung ke server.");
+    }
+  }
 
   async function deleteStop(stopId) {
     const response = await fetch(`/api/stops/${stopId}`, {
@@ -641,37 +760,109 @@ export function AdminDashboard() {
                   Tambah Halte Baru
                 </button>
               </form>
+              
+              {/* SYSTEM ACTIVITY LOG (CONSOLE) */}
+              <div className="mt-8 rounded-[28px] bg-slate-900 p-5 shadow-sm overflow-hidden flex flex-col h-[400px]">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  </div>
+                  <h3 className="text-sm font-semibold text-slate-400 font-mono ml-2 uppercase tracking-widest">System_Console_Log</h3>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto font-mono text-xs sm:text-sm pr-2 space-y-1">
+                  {logs.length === 0 ? (
+                    <p className="text-slate-500 italic">Menunggu aktivitas sistem...</p>
+                  ) : (
+                    logs.map((log) => (
+                      <div key={log.id} className="border-b border-slate-800/50 pb-1 mb-1">
+                        <span className="text-slate-500">[{new Date(log.timestamp).toLocaleTimeString()}]</span>{" "}
+                        <span className={`font-semibold ${
+                          log.type === "INFO" ? "text-blue-400" :
+                          log.type === "SUCCESS" ? "text-green-400" :
+                          log.type === "WARNING" ? "text-yellow-400" :
+                          log.type === "ERROR" ? "text-red-400" : "text-slate-300"
+                        }`}>[{log.type}]</span>{" "}
+                        <span className="text-purple-300">{log.actor}</span>:{" "}
+                        <span className="text-slate-300">{log.action}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
             </section>
           </div>
         )}
 
         {activeTab === 'armada' && (
-          <div className="animate-fade-in max-w-2xl mx-auto">
+          <div className="animate-fade-in max-w-4xl mx-auto">
             <div className="space-y-6">
               <section className="rounded-[28px] bg-white p-5 shadow-sm">
                 <h3 className="text-xl font-semibold text-blue-950">Armada Bilis</h3>
-                <p className="mt-1 text-sm text-slate-500">Atur jumlah bilis aktif yang tersedia untuk dipilih sopir.</p>
+                <p className="mt-1 text-sm text-slate-500">Kelola daftar kendaraan operasional Bilis beserta informasi plat nomornya.</p>
 
-                <div className="mt-4 space-y-3">
-                  <label className="block text-sm font-semibold text-slate-700" htmlFor="total-buses">
-                    Total Bilis Kampus
-                  </label>
-                  <input
-                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400"
-                    id="total-buses"
-                    min="1"
-                    onChange={(event) => setTotalBuses(Number(event.target.value))}
-                    type="number"
-                    value={totalBuses}
-                  />
+                <ul className="mt-5 space-y-3">
+                  {buses.map((bus) => (
+                    <li key={bus.id} className="rounded-2xl border border-slate-200 px-4 py-3">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-slate-800">
+                            Bilis {bus.number}
+                            <span className={`ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${bus.status === 'Non-Aktif' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                              {bus.status || 'Aktif'}
+                            </span>
+                          </p>
+                          <p className="break-all text-sm text-slate-500">
+                            {bus.plate ? bus.plate : "Plat belum diisi"}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition active:scale-95 cursor-pointer"
+                            onClick={() => startEditBus(bus)}
+                            type="button"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="text-xs font-semibold text-red-600 hover:text-red-800 transition active:scale-95 cursor-pointer"
+                            onClick={() => deleteBus(bus.id)}
+                            type="button"
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                <form className="mt-5 space-y-3" onSubmit={createBus}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400"
+                      onChange={(event) => setBusForm((current) => ({ ...current, number: event.target.value }))}
+                      placeholder="Nomor (Misal: 01)"
+                      required
+                      value={busForm.number}
+                    />
+                    <input
+                      className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400"
+                      onChange={(event) => setBusForm((current) => ({ ...current, plate: event.target.value }))}
+                      placeholder="Plat (Misal: B 1234 XY)"
+                      value={busForm.plate}
+                    />
+                  </div>
                   <button
                     className="active:scale-95 w-full rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
-                    onClick={updateFleet}
-                    type="button"
+                    type="submit"
                   >
-                    Simpan Jumlah Bilis
+                    Tambah Bilis
                   </button>
-                </div>
+                </form>
               </section>
             </div>
           </div>
@@ -753,14 +944,27 @@ export function AdminDashboard() {
                     required
                     value={driverForm.username}
                   />
-                  <input
-                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400"
-                    onChange={(event) => setDriverForm((current) => ({ ...current, password: event.target.value }))}
-                    placeholder="Password"
-                    required
-                    type="password"
-                    value={driverForm.password}
-                  />
+                  <div className="relative">
+                    <input
+                      className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400"
+                      onChange={(event) => setDriverForm((current) => ({ ...current, password: event.target.value }))}
+                      placeholder="Password"
+                      required
+                      type={showAddPassword ? "text" : "password"}
+                      value={driverForm.password}
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      onClick={() => setShowAddPassword(!showAddPassword)}
+                    >
+                      {showAddPassword ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                      )}
+                    </button>
+                  </div>
 
                   <button
                     className="active:scale-95 w-full rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
@@ -887,6 +1091,79 @@ export function AdminDashboard() {
         </div>
       )}
 
+      {/* Modal Edit Bilis */}
+      {editingBus && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-blue-950/40 p-4 backdrop-blur-xs transition-all duration-300 animate-fade-in">
+          <div className="relative w-full max-w-lg scale-100 transform rounded-[32px] bg-white p-6 shadow-2xl transition-all duration-300 sm:p-8 border border-slate-100 animate-scale-up">
+            <button
+              onClick={() => setEditingBus(null)}
+              className="absolute top-5 right-5 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition cursor-pointer"
+              type="button"
+            >
+              ✕
+            </button>
+
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-700">Armada Bilis</p>
+            <h3 className="mt-2 text-2xl font-semibold text-blue-950">Edit Bilis {editingBus.number}</h3>
+
+            <form className="mt-6 space-y-4" onSubmit={updateBus}>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                  Nomor Bilis
+                </label>
+                <input
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/30"
+                  onChange={(event) => setBusEditForm((current) => ({ ...current, number: event.target.value }))}
+                  required
+                  value={busEditForm.number}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                  Nomor Polisi (Plat)
+                </label>
+                <input
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/30"
+                  onChange={(event) => setBusEditForm((current) => ({ ...current, plate: event.target.value }))}
+                  value={busEditForm.plate}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                  Status Operasional
+                </label>
+                <select
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/30 bg-white"
+                  onChange={(event) => setBusEditForm((current) => ({ ...current, status: event.target.value }))}
+                  value={busEditForm.status}
+                >
+                  <option value="Aktif">Aktif</option>
+                  <option value="Non-Aktif">Non-Aktif</option>
+                </select>
+              </div>
+
+              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button
+                  className="rounded-2xl border border-slate-200 px-5 py-3 font-semibold text-slate-600 hover:bg-slate-50 transition active:scale-95 cursor-pointer"
+                  onClick={() => setEditingBus(null)}
+                  type="button"
+                >
+                  Batal
+                </button>
+                <button
+                  className="rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700 transition active:scale-95 cursor-pointer"
+                  type="submit"
+                >
+                  Simpan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Modal Edit Sopir */}
       {editingDriver && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-blue-950/40 p-4 backdrop-blur-xs transition-all duration-300 animate-fade-in">
@@ -951,13 +1228,26 @@ export function AdminDashboard() {
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
                   Password Baru (Kosongkan jika tidak ingin diubah)
                 </label>
-                <input
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/30"
-                  onChange={(event) => setDriverEditForm((current) => ({ ...current, password: event.target.value }))}
-                  placeholder="Ketik password baru jika ingin diubah"
-                  type="password"
-                  value={driverEditForm.password}
-                />
+                <div className="relative">
+                  <input
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/30"
+                    onChange={(event) => setDriverEditForm((current) => ({ ...current, password: event.target.value }))}
+                    placeholder="Ketik password baru jika ingin diubah"
+                    type={showEditPassword ? "text" : "password"}
+                    value={driverEditForm.password}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    onClick={() => setShowEditPassword(!showEditPassword)}
+                  >
+                    {showEditPassword ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div>

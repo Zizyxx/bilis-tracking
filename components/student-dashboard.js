@@ -207,9 +207,11 @@ export function StudentDashboard() {
                   Bilis aktif: <span className="font-semibold text-blue-700">{isAnyBusTracking ? activeBuses.map((b) => `#${b.number}`).join(", ") : "-"}</span>.{" "}
                   Status:{" "}
                   <span className="font-semibold text-blue-700">
-                    {!isAnyBusTracking && snapshot.status.operationalStatus === "Beroperasi"
-                      ? "Tidak Beroperasi"
-                      : snapshot.status.operationalStatus}
+                    {!snapshot.status.broadcastEnabled
+                      ? "Sistem Offline"
+                      : !isAnyBusTracking
+                      ? "Sistem Menyala (Bus Belum Jalan)"
+                      : "Sedang Beroperasi"}
                   </span>. Halte
                   terdekat:{" "}
                   <span className="font-semibold text-blue-700">{closestBus ? `${closestBus.stop.name} (Bilis #${closestBus.bus.number})` : "-"}</span>.
@@ -226,11 +228,15 @@ export function StudentDashboard() {
                   Menit Lagi {nearestBusNum ? `(Bilis #${nearestBusNum})` : ""}
                 </p>
                 <p className="max-w-[180px] text-[10px] leading-snug text-slate-500 sm:max-w-[240px] sm:text-sm sm:leading-5">
-                  {isAnyBusTracking ? `${activeBuses.length} bilis sedang beroperasi.` : "Memuat data operasional..."}
+                  {!snapshot.status.broadcastEnabled
+                    ? "Layanan Bilis sedang dimatikan."
+                    : isAnyBusTracking
+                    ? `${activeBuses.length} bilis sedang beroperasi.`
+                    : "Sistem menyala, menunggu bilis berangkat."}
                 </p>
                 {!isAnyBusTracking ? (
                   <p className="mt-0.5 text-[10px] font-medium text-slate-400 sm:mt-1">
-                    Posisi standby: {snapshot.settings?.chargingStationName || "Charging Station"}
+                    Posisi standby: Pool / Charging Station Bilis
                   </p>
                 ) : null}
               </div>
