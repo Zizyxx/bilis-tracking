@@ -22,7 +22,7 @@ export async function POST(request) {
             updatedAt: new Date().toISOString(),
             isTracking: true,
             stationName: current.settings.chargingStationName,
-            statusText: payload.statusText || "Bus sedang bergerak."
+            statusText: payload.statusText || `Bilis ${bus.number} sedang dalam perjalanan.`
           }
         : bus
     )

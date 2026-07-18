@@ -6,8 +6,8 @@ const navigation = ["Manajemen Halte", "Akun Sopir", "Armada Bilis"];
 
 function AdminLogin({ onLogin, loading, error }) {
   const [form, setForm] = useState({
-    identifier: "admin",
-    password: "admin123"
+    identifier: "",
+    password: ""
   });
 
   return (
@@ -49,9 +49,7 @@ function AdminLogin({ onLogin, loading, error }) {
         </button>
       </form>
 
-      <div className="mt-5 rounded-2xl bg-blue-50 p-4 text-sm text-blue-900">
-        Demo akun: `admin` / `admin123`
-      </div>
+
     </section>
   );
 }
@@ -64,9 +62,12 @@ export function AdminDashboard() {
   const [pageError, setPageError] = useState("");
   const [broadcastEnabled, setBroadcastEnabled] = useState(true);
   const [totalBuses, setTotalBuses] = useState(6);
+  const [activeBusesCount, setActiveBusesCount] = useState(0);
   const [activeBusNumber, setActiveBusNumber] = useState("01");
   const [stops, setStops] = useState([]);
   const [drivers, setDrivers] = useState([]);
+  const [searchStop, setSearchStop] = useState("");
+  const [searchDriver, setSearchDriver] = useState("");
   const [stopForm, setStopForm] = useState({
     faculty: "",
     name: "",
@@ -78,14 +79,16 @@ export function AdminDashboard() {
     faculty: "",
     name: "",
     lat: "",
-    lng: ""
+    lng: "",
+    status: "ACTIVE"
   });
   const [editingDriver, setEditingDriver] = useState(null);
   const [driverEditForm, setDriverEditForm] = useState({
     name: "",
     email: "",
     username: "",
-    password: ""
+    password: "",
+    status: "Aktif"
   });
   const [driverForm, setDriverForm] = useState({
     name: "",
@@ -128,6 +131,9 @@ export function AdminDashboard() {
     if (stateResponse.ok) {
       const publicState = await stateResponse.json();
       setActiveBusNumber(publicState.bus?.number || "01");
+      if (publicState.buses) {
+        setActiveBusesCount(publicState.buses.filter((b) => b.isTracking).length);
+      }
     }
   }
 
@@ -211,7 +217,8 @@ export function AdminDashboard() {
       faculty: stop.faculty,
       name: stop.name,
       lat: stop.lat,
-      lng: stop.lng
+      lng: stop.lng,
+      status: stop.status || "ACTIVE"
     });
   }
 
@@ -270,7 +277,8 @@ export function AdminDashboard() {
       name: driver.name,
       email: driver.email,
       username: driver.username,
-      password: ""
+      password: "",
+      status: driver.status || "Aktif"
     });
   }
 
@@ -371,6 +379,17 @@ export function AdminDashboard() {
   if (loading) {
     return <main className="min-h-screen bg-slate-100 p-4 sm:p-8 text-slate-900">Memuat dashboard admin...</main>;
   }
+
+  const filteredStops = stops.filter(stop => 
+    stop.name.toLowerCase().includes(searchStop.toLowerCase()) || 
+    stop.faculty.toLowerCase().includes(searchStop.toLowerCase())
+  );
+
+  const filteredDrivers = drivers.filter(driver => 
+    driver.name.toLowerCase().includes(searchDriver.toLowerCase()) || 
+    driver.email.toLowerCase().includes(searchDriver.toLowerCase()) ||
+    driver.username.toLowerCase().includes(searchDriver.toLowerCase())
+  );
 
   if (!session || session.role !== "admin") {
     return (
@@ -486,7 +505,7 @@ export function AdminDashboard() {
             </div>
           </div>
 
-          <div className="status-grid mb-6">
+          <div className="status-grid mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
             <article className="rounded-[28px] bg-white p-5 shadow-sm">
               <p className="text-sm text-slate-500">Halte Terdaftar</p>
               <p className="mt-3 text-4xl font-semibold text-blue-900">{stops.length}</p>
@@ -498,6 +517,13 @@ export function AdminDashboard() {
             <article className="rounded-[28px] bg-white p-5 shadow-sm">
               <p className="text-sm text-slate-500">Total Armada Bilis</p>
               <p className="mt-3 text-4xl font-semibold text-blue-900">{totalBuses}</p>
+            </article>
+            <article className="rounded-[28px] bg-gradient-to-br from-blue-600 to-blue-800 p-5 shadow-sm">
+              <p className="text-sm text-blue-100">Bus Aktif (Melacak)</p>
+              <div className="mt-3 flex items-center gap-3">
+                <div className="h-3 w-3 rounded-full bg-green-400 animate-pulse"></div>
+                <p className="text-4xl font-semibold text-white">{activeBusesCount}</p>
+              </div>
             </article>
           </div>
 
@@ -519,6 +545,16 @@ export function AdminDashboard() {
                 </div>
               </div>
 
+              <div className="mb-4">
+                <input
+                  type="search"
+                  placeholder="Cari halte atau gedung..."
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/30"
+                  value={searchStop}
+                  onChange={(e) => setSearchStop(e.target.value)}
+                />
+              </div>
+
               <div className="overflow-x-auto rounded-3xl border border-slate-200">
                 <table className="min-w-[640px] divide-y divide-slate-200 text-left text-sm md:min-w-full">
                   <thead className="bg-blue-50 text-blue-800">
@@ -526,16 +562,22 @@ export function AdminDashboard() {
                       <th className="px-4 py-3 font-semibold">Gedung</th>
                       <th className="px-4 py-3 font-semibold">Nama Halte</th>
                       <th className="px-4 py-3 font-semibold">Koordinat</th>
+                      <th className="px-4 py-3 font-semibold">Status</th>
                       <th className="px-4 py-3 font-semibold">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 bg-white">
-                    {stops.map((stop) => (
+                    {filteredStops.map((stop) => (
                       <tr key={stop.id}>
                         <td className="px-4 py-4 font-medium text-slate-700">{stop.faculty}</td>
                         <td className="px-4 py-4 text-slate-600">{stop.name}</td>
                         <td className="px-4 py-4 text-slate-500">
                           {Number(stop.lat).toFixed(4)}, {Number(stop.lng).toFixed(4)}
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${stop.status === 'INACTIVE' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                            {stop.status === 'INACTIVE' ? 'Non-Aktif' : 'Aktif'}
+                          </span>
                         </td>
                         <td className="px-4 py-4 space-x-3">
                           <button
@@ -642,12 +684,27 @@ export function AdminDashboard() {
                 <h3 className="text-xl font-semibold text-blue-950">Akun Sopir</h3>
                 <p className="mt-1 text-sm text-slate-500">Tambah akun login sopir untuk panel `/driver`.</p>
 
+                <div className="mt-4 mb-2">
+                  <input
+                    type="search"
+                    placeholder="Cari nama, email, atau username..."
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/30"
+                    value={searchDriver}
+                    onChange={(e) => setSearchDriver(e.target.value)}
+                  />
+                </div>
+
                 <ul className="mt-4 space-y-3">
-                  {drivers.map((driver) => (
+                  {filteredDrivers.map((driver) => (
                     <li key={driver.id} className="rounded-2xl border border-slate-200 px-4 py-3">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="min-w-0">
-                          <p className="font-semibold text-slate-800">{driver.name}</p>
+                          <p className="font-semibold text-slate-800 capitalize">
+                            {driver.name} 
+                            <span className={`ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${driver.status === 'Non-Aktif' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                              {driver.status || 'Aktif'}
+                            </span>
+                          </p>
                           <p className="break-all text-sm text-slate-500">
                             {driver.email} | {driver.username}
                           </p>
@@ -796,6 +853,20 @@ export function AdminDashboard() {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                  Status Halte
+                </label>
+                <select
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/30 bg-white"
+                  onChange={(event) => setEditForm((current) => ({ ...current, status: event.target.value }))}
+                  value={editForm.status}
+                >
+                  <option value="ACTIVE">Aktif (Beroperasi)</option>
+                  <option value="INACTIVE">Non-Aktif</option>
+                </select>
+              </div>
+
               <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button
                   className="rounded-2xl border border-slate-200 px-5 py-3 font-semibold text-slate-600 hover:bg-slate-50 transition active:scale-95 cursor-pointer"
@@ -889,7 +960,19 @@ export function AdminDashboard() {
                 />
               </div>
 
-
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                  Status Akun
+                </label>
+                <select
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/30 bg-white"
+                  onChange={(event) => setDriverEditForm((current) => ({ ...current, status: event.target.value }))}
+                  value={driverEditForm.status}
+                >
+                  <option value="Aktif">Aktif</option>
+                  <option value="Non-Aktif">Non-Aktif (Blokir Login & Tracking)</option>
+                </select>
+              </div>
 
               <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button

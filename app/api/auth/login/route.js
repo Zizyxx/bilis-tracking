@@ -11,15 +11,28 @@ export async function POST(request) {
     );
   }
 
-  const user = await findUserByCredentials(role, identifier, password);
+  try {
+    const user = await findUserByCredentials(role, identifier, password);
 
-  if (!user) {
+    if (!user) {
+      return NextResponse.json(
+        { error: "Login gagal. Periksa kembali kredensial Anda." },
+        { status: 401 }
+      );
+    }
+
+    const response = NextResponse.json({ user });
+    return withSessionCookie(response, user);
+  } catch (error) {
+    if (error.message === "Akun dinonaktifkan") {
+      return NextResponse.json(
+        { error: "Akun Anda telah dinonaktifkan oleh Admin." },
+        { status: 403 }
+      );
+    }
     return NextResponse.json(
-      { error: "Login gagal. Periksa kembali kredensial Anda." },
-      { status: 401 }
+      { error: "Terjadi kesalahan sistem saat login." },
+      { status: 500 }
     );
   }
-
-  const response = NextResponse.json({ user });
-  return withSessionCookie(response, user);
 }

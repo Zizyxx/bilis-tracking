@@ -25,7 +25,7 @@ export async function POST(request) {
               ...bus,
               isTracking: true,
               driverId: auth.id,
-              statusText: `Bilis ${busNumber} sedang mengirim lokasi secara real-time.`,
+              statusText: `Bilis ${busNumber} sedang dalam perjalanan.`,
               updatedAt: new Date().toISOString()
             }
           : bus

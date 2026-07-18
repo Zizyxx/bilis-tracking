@@ -21,7 +21,7 @@ export async function POST() {
             isTracking: false,
             driverId: null,
             stationName: current.settings.chargingStationName,
-            statusText: `Bilis ${bus.number} berada di ${current.settings.chargingStationName}.`,
+            statusText: `Bilis ${bus.number} terparkir di ${current.settings.chargingStationName}.`,
             updatedAt: new Date().toISOString()
           }
         : bus

@@ -56,30 +56,43 @@ export function StudentDashboard() {
 
   useEffect(() => {
     let isMounted = true;
-    let pollingTimer;
+    let eventSource;
 
-    async function loadState() {
-      try {
-        const response = await fetch("/api/public/state", { cache: "no-store" });
-        const data = await response.json();
-        if (isMounted) {
+    function connectSSE() {
+      eventSource = new EventSource("/api/public/stream");
+
+      eventSource.onmessage = (event) => {
+        if (!isMounted) return;
+        try {
+          const data = JSON.parse(event.data);
           setSnapshot(data);
           setSelectedStopId((current) => current || data.stops[0]?.id || seedStops[0].id);
           setIsConnected(true);
+        } catch (err) {
+          console.error("Failed to parse SSE data", err);
         }
-      } catch {
-        if (isMounted) {
-          setIsConnected(false);
-        }
-      }
+      };
+
+      eventSource.onerror = () => {
+        if (!isMounted) return;
+        setIsConnected(false);
+        eventSource.close();
+        // Reconnect after 3 seconds if connection drops
+        setTimeout(connectSSE, 3000);
+      };
+
+      eventSource.onopen = () => {
+        if (isMounted) setIsConnected(true);
+      };
     }
 
-    loadState();
-    pollingTimer = window.setInterval(loadState, 5000);
+    connectSSE();
 
     return () => {
       isMounted = false;
-      window.clearInterval(pollingTimer);
+      if (eventSource) {
+        eventSource.close();
+      }
     };
   }, []);
 
@@ -148,13 +161,15 @@ export function StudentDashboard() {
           <div className="flex max-w-full items-center gap-2 self-start rounded-xl bg-blue-50 px-2 py-1.5 sm:gap-3 sm:rounded-2xl sm:px-4 sm:py-2 md:self-auto md:rounded-full">
             <div
               className={`pulse-dot h-2 w-2 sm:h-3 sm:w-3 rounded-full ${
-                isAnyBusTracking && isConnected && !isGpsOffline ? "bg-green-500" : "bg-slate-300"
+                snapshot.status.broadcastEnabled && isAnyBusTracking && isConnected && !isGpsOffline ? "bg-green-500" : "bg-slate-300"
               }`}
             />
             <div className="min-w-0">
               <p className="text-xs font-semibold text-blue-900 sm:text-sm">
-                {!isAnyBusTracking
-                  ? "Bilis sedang tidak beroperasi"
+                {!snapshot.status.broadcastEnabled
+                  ? "Sistem Bilis Offline"
+                  : !isAnyBusTracking
+                  ? "Sistem Menyala (Belum Ada Bus Jalan)"
                   : isGpsOffline
                   ? "Menunggu Sinyal GPS"
                   : isConnected
@@ -238,20 +253,7 @@ export function StudentDashboard() {
                   {stop.faculty}
                 </button>
               ))}
-            </div>
-
-            <button
-              className="active:scale-95 w-full rounded-full border border-blue-700 bg-white px-4 py-2 text-[11px] font-semibold text-blue-700 transition hover:bg-blue-50 sm:px-5 sm:py-3 sm:text-sm md:w-auto"
-              onClick={async () => {
-                const response = await fetch("/api/public/state", { cache: "no-store" });
-                const data = await response.json();
-                setSnapshot(data);
-                setAutoCenter(true);
-              }}
-              type="button"
-            >
-              Refresh Peta
-            </button>
+          </div>
           </div>
         </div>
       </section>

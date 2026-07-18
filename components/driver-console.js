@@ -17,8 +17,8 @@ function CoordinateLine({ latitude, longitude }) {
 
 function DriverLogin({ onLogin, error, loading }) {
   const [form, setForm] = useState({
-    identifier: "driver1",
-    password: "driver123"
+    identifier: "",
+    password: ""
   });
 
   return (
@@ -60,9 +60,7 @@ function DriverLogin({ onLogin, error, loading }) {
         </button>
       </form>
 
-      <div className="mt-5 rounded-2xl bg-blue-50 p-4 text-sm text-blue-900">
-        Demo akun: `driver1` / `driver123`
-      </div>
+
     </section>
   );
 }
@@ -172,7 +170,7 @@ export function DriverConsole() {
     }
   }
 
-  async function sendLocation(latitude, longitude, nextStatusText = "Bus sedang bergerak.") {
+  async function sendLocation(latitude, longitude, nextStatusText = `Bilis ${selectedBusNumber} sedang dalam perjalanan.`) {
     setPosition({ latitude, longitude });
     setStatusText(nextStatusText);
 
@@ -267,7 +265,7 @@ export function DriverConsole() {
 
     await fetch("/api/tracking/stop", { method: "POST" });
     setIsTracking(false);
-    setStatusText(`Bilis ${selectedBusNumber} masuk mode istirahat.`);
+    setStatusText(`Bilis ${selectedBusNumber} terparkir (istirahat).`);
   }
 
   async function logout() {
@@ -366,14 +364,14 @@ export function DriverConsole() {
               onClick={startTracking}
               type="button"
             >
-              Mulai Bilis {selectedBusNumber}
+              Mulai Narik Bilis {selectedBusNumber}
             </button>
             <button
               className="active:scale-95 min-h-20 rounded-[22px] border-2 border-red-500 bg-white px-6 py-5 text-lg font-semibold text-red-600 transition hover:bg-red-50 sm:min-h-24 sm:rounded-[26px] sm:px-8 sm:py-7 sm:text-xl"
               onClick={stopTracking}
               type="button"
             >
-              Selesai / Istirahat
+              Selesai Narik (Istirahat)
             </button>
           </div>
         </section>
