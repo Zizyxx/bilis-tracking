@@ -1,0 +1,15 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "bilis-tracking",
+    "compatibility_date": "2026-07-18",
+    "observability": {
+        "enabled": true
+    },
+    "compatibility_flags": [
+        "nodejs_compat"
+    ],
+    "vars": {
+        // Isi dengan string asal/dummy saja agar proses build Next.js tidak error
+        "MONGO_URI": "mongodb_dummy_placeholder_for_build"
+    }
+}
